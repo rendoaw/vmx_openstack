@@ -1,0 +1,31 @@
+#!/bin/bash -x
+
+export CINDER_VERSION="2"
+export OS_AUTH_URL="http://192.168.1.19:5000/v2.0"
+export OS_IDENTITY_API_VERSION="2.0"
+export OS_NO_CACHE="1"
+export OS_REGION_NAME="RegionOne"
+export OS_TENANT_NAME="admin"
+export OS_USERNAME="admin"
+export OS_PASSWORD="password"
+export OS_VOLUME_API_VERSION="2"
+
+export PYDIR=""
+export HEAT="${PYDIR}heat"
+export NEUTRON="${PYDIR}neutron"
+export NOVA="${PYDIR}nova"
+export PYTHON="${PYDIR}python"
+export GLANCE="${PYDIR}glance"
+export KEYSTONE="${PYDIR}keystone"
+export OPENSTACK="${PYDIR}openstack"
+
+export OS_CONTRAIL_USERNAME="admin"
+export OS_CONTRAIL_PASSWORD="password"
+export OS_CONTRAIL_TENANT_NAME="admin"
+export OS_CONTRAIL_URL=${CONTRAIL_URL}
+
+export OCSC="ocsc/ocsc.py"
+export OS_CONTRAIL_URL="http://192.168.1.19"
+
+#future use
+export KEYPAIR="mykeypair"
