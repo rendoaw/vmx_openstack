@@ -1,6 +1,6 @@
 ## Overview
 
-This repo contains simple Heat template and scripts to launch multiple vMX on OpenStack+Contrail.
+This repo contains simple Heat template and scripts to launch multiple vMX on OpenStack+Contrail as well as some linux VMs.
 
 Some of the template/script component are taken from official Juniper Heat Template [https://github.com/Juniper/vmx-heat-templates]
 While the official template from Juniper provide a complete structure as well as a great detail of the explanation, their focus is to launch vMX that connected to real network.
@@ -21,19 +21,39 @@ As an example, 2_nodes_vmx.yaml will launch a simple topology as below:
         * the virtual network must be exist prior running the launching script
     * All vMX ge-0/0/0 and ge-0/0/1 will be connected to the same virtual network, let's call it net_dummy
         * this virtual network will be automatically created by the template
-    * All vMX ge-0/0/0 and ge-0/0/1 will be connected to the same virtual network, let's call it net_dummy
-        * this virtual network will be automatically created by the template
-    * All vMX ge-0/0/2 will be connected to the existing virtual network
-        * the purpose is, for lab simulation, sometime i need to connect vMX that launched from this template to the other vMX or even other VM inside OpenStack or even outside Openstack
+    * All vMX ge-0/0/2 will be connected to the existing virtual network. 
+        * for further reference, let's call this virtual network as "net1"
+        * this virtual network is to connect vMX to the other VM that launched separately, or even connect to any VM/physical server outside Openstack.
         * the virtual network must be exist prior running the launching script
-    * All vMX ge-0/0/3 will be connected to the existing virtual network
-        * same purpose as ge-0/0/2. I just prepare 2 different network in case anyone need it. For my case, usually i use ge-0/0/2 for untagged traffic and ge-0/0/3 for tagged traffic
+    * All vMX ge-0/0/3 will be connected to the other existing virtual network
+        * similar purpose as ge-0/0/2.
+        * for further reference, let's call this virtual network as "net2"
         * the virtual network must be exist prior running the launching script
     * EACH vmx ge-0/0/4 and ge-0/0/5 will have "hairpin" connection. 
         * Each VMX hairpin is isolated, so ge-0/0/4 from vmx01 will not connect to vmx02 ge-0/0/4
         * this virtual network will be automatically created by the template
         * I usually use this network to connect multiple logical system inside a vMX (alternatively you can use lt- interface)
-    
+    * All vMX ge-0/0/6 will be connected to the other existing virtual network
+        * similar purpose as ge-0/0/2.
+        * for further reference, let's call this virtual network as "net3"
+        * the virtual network must be exist prior running the launching script
+    * All vMX ge-0/0/7 will be connected to the other existing virtual network
+        * similar purpose as ge-0/0/2.
+        * for further reference, let's call this virtual network as "net4"
+        * the virtual network must be exist prior running the launching script
+    * All vMX ge-0/0/8 will be connected to the other existing virtual network
+        * similar purpose as ge-0/0/2.
+        * for further reference, let's call this virtual network as "net5"
+        * the virtual network must be exist prior running the launching script
+    * All vMX ge-0/0/9 will be connected to the other existing virtual network
+        * similar purpose as ge-0/0/2.
+        * for further reference, let's call this virtual network as "net6"
+        * the virtual network must be exist prior running the launching script
+
+* in summary, we need to have 6 existing virtual network for this template. 
+    * in previos heat template version, we only need 2 existing virtual network, but i found out that if we want to simulate any L2 tunneling technology (L2VPN, VPLS, EVPN, etc), it is better to have more vnet.
+    * the name of the existing virtual network is not necessary to be net1, net2, and so on. You can use any name, and you can map them inside the env file. 
+
     
 If you notice, this script also depend on my other script [https://github.com/rendoaw/ocsc] to modify Contrail parameter thru REST API. 
 This script is needed to change the virtual network properties as below:

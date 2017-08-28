@@ -28,14 +28,30 @@ parameters:
         type: string
         description: The Availability Zone to launch the instance.
         default: nova
-    inter_topo_net:
+    net1:
         type: string
-        description: inter topo net
+        description: existing virtual network 1
         default: net1
-    inter_topo_net_2:
+    net2:
         type: string
-        description: inter topo net
+        description: existing virtual network 2
         default: net2
+    net3:
+        type: string
+        description: existing virtual network 3
+        default: net3
+    net4:
+        type: string
+        description: existing virtual network 4
+        default: net4
+    net5:
+        type: string
+        description: existing virtual network 5
+        default: net5
+    net6:
+        type: string
+        description: existing virtual network 6
+        default: net6
     vmx_id_01:
         type: string
         description: vMX 1 hostname
@@ -47,7 +63,7 @@ parameters:
     gateway_ip:
         type: string
         description: Management network default gateway
-        default: 100.64.1.1
+
 
 resources:
   allow_all_security_group:
@@ -108,36 +124,7 @@ resources:
       enable_dhcp: false
       cidr: 11.255.102.0/24
 
-#  net_dummy_103:
-#    type: OS::Neutron::Net
-#    properties:
-#      name: 
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'net_dummy_103']]
-#
-#  subnet_dummy_103:
-#    type: OS::Neutron::Subnet
-#    properties:
-#      name: 
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'subnet_dummy_103']]
-#      network_id: { get_resource: net_dummy_103 }
-#      enable_dhcp: false
-#      cidr: 11.255.103.0/24
-#
-#  net_dummy_104:
-#    type: OS::Neutron::Net
-#    properties:
-#      name: 
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'net_dummy_104']]
-#
-#  subnet_dummy_104:
-#    type: OS::Neutron::Subnet
-#    properties:
-#      name: 
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'subnet_dummy_104']]
-#      network_id: { get_resource: net_dummy_104 }
-#      enable_dhcp: false
-#      cidr: 11.255.104.0/24
-#
+
   svrgrp_101: 
     type: OS::Nova::ServerGroup 
     properties: 
@@ -151,20 +138,6 @@ resources:
       name:
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'svrgrp_102']]
       policies: [ 'affinity' ] 
-
-#  svrgrp_103: 
-#    type: OS::Nova::ServerGroup 
-#    properties: 
-#      name:
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'svrgrp_103']]
-#      policies: [ 'affinity' ] 
-#
-#  svrgrp_104: 
-#    type: OS::Nova::ServerGroup 
-#    properties: 
-#      name:
-#        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'svrgrp_104']]
-#      policies: [ 'affinity' ] 
 
 
 
@@ -184,21 +157,6 @@ resources:
       enable_dhcp: false
       cidr: 128.0.0.0/24
       gateway_ip: 128.0.0.254
-
-  vmx101_fab_net:
-    type: OS::Neutron::Net
-    properties:
-      name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fab_net']]
-
-  vmx101_fab_subnet:
-    type: OS::Neutron::Subnet
-    properties:
-      name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_pfe_net_subnet']]
-      network_id: { get_resource: vmx101_fab_net }
-      enable_dhcp: false
-      cidr: 128.1.0.0/24
 
   vmx101_re_port_0:
     type: OS::Neutron::Port
@@ -258,12 +216,32 @@ resources:
         /var/db/cumulus/baseline_config.template: {get_file: config/vmx_baseline.conf}}
 
 
+  vmx101_fpc_port_fxp:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_fxp']]
+      network_id: { get_param: public_network }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+
+  vmx101_fpc_port_re:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_re']]
+      network_id: { get_resource: vmx101_pfe_net }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+      fixed_ips: [{
+        ip_address: 128.0.0.16}]
+
   vmx101_fpc_port_0:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_0']]
-      network_id: { get_param: public_network }
+      network_id: { get_resource: net_dummy }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -272,28 +250,25 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_1']]
-      network_id: { get_resource: vmx101_pfe_net }
+      network_id: { get_resource: net_dummy }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
-      fixed_ips: [{
-        ip_address: 128.0.0.16}]
 
   vmx101_fpc_port_2:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_2']]
+      network_id: { get_param: net1 }
       security_groups: [{ get_resource: allow_all_security_group }]
-      network_id: { get_resource: vmx101_fab_net }
-      fixed_ips: [{
-        ip_address: 128.1.0.16}]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
   vmx101_fpc_port_3:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_3']]
-      network_id: { get_resource: net_dummy }
+      network_id: { get_param: net2 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -302,7 +277,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_4']]
-      network_id: { get_resource: net_dummy }
+      network_id: { get_resource: net_dummy_101 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -311,7 +286,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_5']]
-      network_id: { get_param: inter_topo_net }
+      network_id: { get_resource: net_dummy_101 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -320,7 +295,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_6']]
-      network_id: { get_param: inter_topo_net_2 }
+      network_id: { get_param: net3 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -329,7 +304,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_7']]
-      network_id: { get_resource: net_dummy_101 }
+      network_id: { get_param: net4 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -338,7 +313,16 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_8']]
-      network_id: { get_resource: net_dummy_101 }
+      network_id: { get_param: net5 }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+
+  vmx101_fpc_port_9:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx101_fpc_port_9']]
+      network_id: { get_param: net6 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -354,6 +338,8 @@ resources:
       scheduler_hints:
         group: { get_resource: svrgrp_101 }
       networks:
+        - port: { get_resource: vmx101_fpc_port_fxp }
+        - port: { get_resource: vmx101_fpc_port_re }
         - port: { get_resource: vmx101_fpc_port_0 }
         - port: { get_resource: vmx101_fpc_port_1 }
         - port: { get_resource: vmx101_fpc_port_2 }
@@ -363,6 +349,7 @@ resources:
         - port: { get_resource: vmx101_fpc_port_6 }
         - port: { get_resource: vmx101_fpc_port_7 }
         - port: { get_resource: vmx101_fpc_port_8 }
+        - port: { get_resource: vmx101_fpc_port_9 }
 
 
 
@@ -371,6 +358,9 @@ resources:
 
 
 #############################################################
+
+
+
   vmx102_pfe_net:
     type: OS::Neutron::Net
     properties:
@@ -381,39 +371,11 @@ resources:
     type: OS::Neutron::Subnet
     properties:
       name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_pfe_subnet']]
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_pfe_net_subnet']]
       network_id: { get_resource: vmx102_pfe_net }
       enable_dhcp: false
       cidr: 128.0.0.0/24
       gateway_ip: 128.0.0.254
-
-  allow_all_security_group:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'allow_all_security_group']]
-      rules: [
-        {remote_ip_prefix: 0.0.0.0/0,
-        direction: egress,
-        ethertype: IPv4},
-        {remote_ip_prefix: 0.0.0.0/0,
-        direction: ingress,
-        ethertype: IPv4}]
-
-  vmx102_fab_net:
-    type: OS::Neutron::Net
-    properties:
-      name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fab_net']]
-
-  vmx102_fab_subnet:
-    type: OS::Neutron::Subnet
-    properties:
-      name: 
-        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fab_subnet']]
-      network_id: { get_resource: vmx102_fab_net }
-      enable_dhcp: false
-      cidr: 128.1.0.0/24
 
   vmx102_re_port_0:
     type: OS::Neutron::Port
@@ -422,6 +384,7 @@ resources:
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_re_port_0']]
       network_id: { get_param: public_network }
       security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
   vmx102_re_port_1:
     type: OS::Neutron::Port
@@ -472,12 +435,32 @@ resources:
         /var/db/cumulus/baseline_config.template: {get_file: config/vmx_baseline.conf}}
 
 
+  vmx102_fpc_port_fxp:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_fxp']]
+      network_id: { get_param: public_network }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+
+  vmx102_fpc_port_re:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_re']]
+      network_id: { get_resource: vmx102_pfe_net }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+      fixed_ips: [{
+        ip_address: 128.0.0.16}]
+
   vmx102_fpc_port_0:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_0']]
-      network_id: { get_param: public_network }
+      network_id: { get_resource: net_dummy }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -486,28 +469,25 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_1']]
-      network_id: { get_resource: vmx102_pfe_net }
+      network_id: { get_resource: net_dummy }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
-      fixed_ips: [{
-        ip_address: 128.0.0.16}]
 
   vmx102_fpc_port_2:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_2']]
+      network_id: { get_param: net1 }
       security_groups: [{ get_resource: allow_all_security_group }]
-      network_id: { get_resource: vmx102_fab_net }
-      fixed_ips: [{
-        ip_address: 128.1.0.16}]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
   vmx102_fpc_port_3:
     type: OS::Neutron::Port
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_3']]
-      network_id: { get_resource: net_dummy }
+      network_id: { get_param: net2 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -516,7 +496,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_4']]
-      network_id: { get_resource: net_dummy }
+      network_id: { get_resource: net_dummy_102 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -525,7 +505,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_5']]
-      network_id: { get_param: inter_topo_net }
+      network_id: { get_resource: net_dummy_102 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -534,7 +514,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_6']]
-      network_id: { get_param: inter_topo_net_2 }
+      network_id: { get_param: net3 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -543,7 +523,7 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_7']]
-      network_id: { get_resource: net_dummy_102 }
+      network_id: { get_param: net4 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -552,7 +532,16 @@ resources:
     properties:
       name: 
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_8']]
-      network_id: { get_resource: net_dummy_102 }
+      network_id: { get_param: net5 }
+      security_groups: [{ get_resource: allow_all_security_group }]
+      allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
+
+  vmx102_fpc_port_9:
+    type: OS::Neutron::Port
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc_port_9']]
+      network_id: { get_param: net6 }
       security_groups: [{ get_resource: allow_all_security_group }]
       allowed_address_pairs: [{"ip_address": "0.0.0.0/0"}]
 
@@ -564,10 +553,12 @@ resources:
         list_join: ['-', [ {get_param: 'OS::stack_name'}, 'vmx102_fpc']]
       image: { get_param: fpc_image }
       availability_zone: { get_param: availability_zone }
+      flavor: {get_param: fpc_flavor}
       scheduler_hints:
         group: { get_resource: svrgrp_102 }
-      flavor: {get_param: fpc_flavor}
       networks:
+        - port: { get_resource: vmx102_fpc_port_fxp }
+        - port: { get_resource: vmx102_fpc_port_re }
         - port: { get_resource: vmx102_fpc_port_0 }
         - port: { get_resource: vmx102_fpc_port_1 }
         - port: { get_resource: vmx102_fpc_port_2 }
@@ -577,6 +568,8 @@ resources:
         - port: { get_resource: vmx102_fpc_port_6 }
         - port: { get_resource: vmx102_fpc_port_7 }
         - port: { get_resource: vmx102_fpc_port_8 }
+        - port: { get_resource: vmx102_fpc_port_9 }
+
 
 
 

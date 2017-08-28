@@ -1,0 +1,101 @@
+heat_template_version: 2014-10-16
+
+description: Heat template for Generic Linux
+
+parameters:
+    public_network:
+        type: string
+        label: Public network name or ID
+        description: Management network.
+    linux_image:
+        type: string
+        description: linux image
+    linux_flavor:
+        type: string
+        description: flavor
+        default: m1.small
+    availability_zone:
+        type: string
+        description: The Availability Zone to launch the instance.
+        default: nj
+    inter_topo_net:
+        type: string
+        description: inter topo net
+        default: net1
+    inter_topo_net_2:
+        type: string
+        description: inter topo net
+        default: net2
+    rootpassword:
+        type: string
+        label: Root Password
+        default: root123
+    key_name:
+        type: string
+        description: SSH Keypair name
+        default: lab
+    admin_user:
+        type: string
+        description: default admin user for cloud based image
+        default: ubuntu
+
+resources:
+  allow_all_security_group:
+      type: OS::Neutron::SecurityGroup
+      properties:
+        name: allow_all_security_group
+        rules: [
+          {remote_ip_prefix: 0.0.0.0/0,
+          direction: egress,
+          ethertype: IPv4},
+          {remote_ip_prefix: 0.0.0.0/0,
+          direction: ingress,
+          ethertype: IPv4}]
+
+#############################################################
+
+  linux_port_0:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: public_network }
+
+  linux_port_1:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: inter_topo_net }
+
+  linux_port_2:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: inter_topo_net_2 }
+
+  linux:
+    type: OS::Nova::Server
+    properties:
+      name: 
+        list_join: ['-', [ {get_param: 'OS::stack_name'}, 'linux']]
+      image: { get_param: linux_image }
+      flavor: { get_param: linux_flavor }
+      availability_zone: { get_param: availability_zone }
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: linux_port_0 }
+        - port: { get_resource: linux_port_1 }
+        - port: { get_resource: linux_port_2 }
+      admin_user: { get_param: admin_user }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          params:
+            __rootpassword__: { get_param: rootpassword }
+          template: |
+            #!/bin/bash -x
+            echo "root:__rootpassword__" | chpasswd
+            echo "centos:__rootpassword__" | chpasswd
+            echo "ubuntu:__rootpassword__" | chpasswd
+            sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+            sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
+            service sshd restart
+            killall -HUP sshd
+            rm -f /root/.ssh/authorized_keys
+            /etc/init.d/ssh restart
